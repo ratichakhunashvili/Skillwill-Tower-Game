@@ -44,7 +44,13 @@ Everything about a floor (colors, enemy counts, intro text, `groundY`) lives in 
 
 Unlike the enemy/boss slots (single spritesheet PNG), Rati's art ships as **one PNG per frame** — see `public/assets/character/<idle|run|jump|punch|mind_blow>/`, each with a README, plus `public/assets/character/manifest.json` from the original art pack. Frame counts/fps/scale live in [src/config/character.js](src/config/character.js).
 
-Every frame PNG has been cleaned and re-registered in place: the original export had small baked-in debug markup (a frame-number caption, stray guide lines) near the feet, and — more importantly — each pose's feet weren't at a consistent canvas position (idle/run/jump sat noticeably higher than punch/mind_blow's crouch), which is what made Rati hover/sink when switching animations. Every frame now has its feet at the same native canvas point (128, 231), which `CHARACTER_ORIGIN`/`CHARACTER_BODY` in `character.js` are built around. If you swap in new art, it needs the same treatment (clean + re-register to that same foot point) or the hover bug comes back.
+**`animations/` in the repo root is the pristine source art** (one folder per animation, plus `manifest.json` and the original zip). `public/assets/character/` holds the *processed* frames the game actually loads. If you need to rebuild, always start from `animations/` — never from the processed copies.
+
+Processing does three things, and each one matters:
+
+1. **Removes baked-in debug markup.** The export has a frame-number caption under the feet plus stray guide lines/letters. All of it is near-black (value ≤92) or a 1–3px hairline, whereas the real effect art — the ground shadows and the punch impact burst — is light grey (≥110) and the mind_blow aura is saturated purple. So cleanup keeps anything bright or colourful and erases only genuinely dark/thin bits. **Do not** simplify this to "erase everything that isn't the character": the punch burst and the airborne shadows are separate shapes, and blanket-erasing them guts the punch and jump animations.
+2. **Aligns the animations to each other, per animation — never per frame.** idle/run/jump were drawn ~20px higher on the canvas than punch/mind_blow, so each animation gets one uniform shift. Shifting *per frame* destroys the motion that's deliberately in the art (the jump's tuck and rise, mind_blow's levitation at the apex). Alignment is measured from the **shoes**, not the sprite bounding box — each frame's soft grey shadow extends ~6px below the feet, so aligning on the bbox anchors Rati by his shadow's lower edge and leaves him hovering. Every animation's shoe line now sits at native y=224, which is what `CHARACTER_ORIGIN`/`CHARACTER_BODY` in `character.js` are built around.
+3. **Strips the ground shadow from the airborne jump frames**, since physics lifts the sprite during a jump and a shadow travelling with him would hang in mid-air. Grounded animations keep theirs.
 
 ### Level backgrounds
 

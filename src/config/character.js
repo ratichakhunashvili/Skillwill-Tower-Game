@@ -27,9 +27,19 @@
 //     frames), never per frame: within an animation the vertical spread is
 //     intentional motion — the jump's tuck and airborne rise, mind_blow's
 //     levitation at the apex — and flattening each frame's bbox to a fixed
-//     line destroys exactly that. Every animation's ground line (where its
-//     shadow rests) now sits at native y=229; CHARACTER_ORIGIN is that
-//     point as a Phaser origin fraction.
+//     line destroys exactly that.
+//  4. Alignment is measured from the SHOES, not the sprite's bbox. Each
+//     frame also contains a soft grey ground shadow that extends ~6px
+//     BELOW the feet, so aligning on the bbox bottom anchors Rati by his
+//     shadow's lower edge and leaves him hovering above the floor. Shoe
+//     pixels are identifiable because they're dark outlines or bright
+//     white soles, while the shadow is flat mid-grey — that's how the
+//     foot line was found. Every animation's shoe line now sits at native
+//     y=224 and CHARACTER_ORIGIN is that point as a Phaser origin
+//     fraction, so sprite.y is genuinely where Rati's feet meet the floor.
+//  5. The airborne jump frames had their baked ground shadow removed:
+//     physics lifts the sprite during a jump, so a shadow travelling with
+//     him would hang in mid-air. Grounded animations keep theirs.
 // ---------------------------------------------------------------------------
 
 export const CHARACTER_NATIVE_SIZE = 256; // every source frame is a 256x256 canvas
@@ -40,19 +50,19 @@ export const CHARACTER_NATIVE_SIZE = 256; // every source frame is a 256x256 can
 export const CHARACTER_SCALE = 0.85;
 
 // Sprite origin, as Phaser fractions (0-1) of the 256x256 canvas — the
-// point in every frame that maps to Player's (x, y). Each animation's
-// ground line (where its shadow rests) sits at native y=229, and the
-// resting silhouette is centred on native x=132, so `y` here is Rati's
-// actual ground-contact row rather than the canvas edge.
-export const CHARACTER_ORIGIN = { x: 132 / 256, y: 229 / 256 };
+// point in every frame that maps to Player's (x, y). Every animation's
+// shoe line sits at native y=224 and the feet are centred on native
+// x=128, so `y` here is genuinely where Rati's feet meet the floor.
+export const CHARACTER_ORIGIN = { x: 128 / 256, y: 224 / 256 };
 
 // Collision box, in NATIVE (pre-scale) pixels — Player.js scales it via
 // Phaser's body.setSize/setOffset. Sized to idle's resting silhouette, not
 // punch/mind_blow's extended reach (those use their own hitbox/AoE circle
-// instead of the body). offsetY + height lands exactly on the native 229
-// ground line, so the body's bottom edge always equals the sprite's y and
-// Rati's feet can't drift off the floor.
-export const CHARACTER_BODY = { width: 76, height: 118, offsetX: 94, offsetY: 111 };
+// instead of the body), and centred on the origin's x so the box stays
+// symmetric when the sprite flips to face left. offsetY + height lands
+// exactly on the native 224 shoe line, so the body's bottom edge always
+// equals the sprite's y and Rati's feet can't drift off the floor.
+export const CHARACTER_BODY = { width: 76, height: 117, offsetX: 90, offsetY: 107 };
 
 export const CHARACTER_ANIMATIONS = {
   idle: { frameCount: 7, frameRate: 8, repeat: -1 },

@@ -1,0 +1,87 @@
+{
+  "character": "Rati",
+  "canvas_size": [
+    256,
+    256
+  ],
+  "format": "PNG RGBA transparent",
+  "animations": {
+    "idle": {
+      "frames": 8,
+      "suggested_fps": 6,
+      "files": [
+        "idle_01.png",
+        "idle_02.png",
+        "idle_03.png",
+        "idle_04.png",
+        "idle_05.png",
+        "idle_06.png",
+        "idle_07.png",
+        "idle_08.png"
+      ]
+    },
+    "run": {
+      "frames": 10,
+      "suggested_fps": 12,
+      "files": [
+        "run_01.png",
+        "run_02.png",
+        "run_03.png",
+        "run_04.png",
+        "run_05.png",
+        "run_06.png",
+        "run_07.png",
+        "run_08.png",
+        "run_09.png",
+        "run_10.png"
+      ]
+    },
+    "jump": {
+      "frames": 8,
+      "suggested_fps": 10,
+      "files": [
+        "jump_01.png",
+        "jump_02.png",
+        "jump_03.png",
+        "jump_04.png",
+        "jump_05.png",
+        "jump_06.png",
+        "jump_07.png",
+        "jump_08.png"
+      ]
+    },
+    "punch": {
+      "frames": 8,
+      "suggested_fps": 12,
+      "files": [
+        "punch_01.png",
+        "punch_02.png",
+        "punch_03.png",
+        "punch_04.png",
+        "punch_05.png",
+        "punch_06.png",
+        "punch_07.png",
+        "punch_08.png"
+      ]
+    },
+    "mind_blow": {
+      "frames": 13,
+      "suggested_fps": 10,
+      "files": [
+        "mind_blow_01.png",
+        "mind_blow_02.png",
+        "mind_blow_03.png",
+        "mind_blow_04.png",
+        "mind_blow_05.png",
+        "mind_blow_06.png",
+        "mind_blow_07.png",
+        "mind_blow_08.png",
+        "mind_blow_09.png",
+        "mind_blow_10.png",
+        "mind_blow_11.png",
+        "mind_blow_12.png",
+        "mind_blow_13.png"
+      ]
+    }
+  }
+}
