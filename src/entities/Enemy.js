@@ -3,8 +3,8 @@ import { generateSpiderTexture, generateMobTexture } from '../utils/placeholderA
 const SPIDER_COLOR = 0x1a1a1a;
 
 const STATS = {
-  spider: { hp: 30, damage: 8, speed: 45, w: 24, h: 16 },
-  mob: { hp: 55, damage: 14, speed: 30, w: 26, h: 26 }
+  spider: { hp: 30, damage: 8, speed: 80, w: 24, h: 16 },
+  mob: { hp: 55, damage: 14, speed: 55, w: 26, h: 26 }
 };
 
 export default class Enemy {

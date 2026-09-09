@@ -8,21 +8,28 @@
 // them). PreloadScene loads every frame as its own texture keyed
 // `char_<anim>_<n>`, and Player.js stitches them into a Phaser animation.
 //
-// NOTE on the source pack, and why every frame got reprocessed in place:
+// NOTE on the source pack, and how every frame was reprocessed in place:
 //  1. The very last frame in idle/run/jump/punch (e.g. idle_08.png) is a
 //     fully blank/empty canvas — frameCount below excludes it.
-//  2. Every frame originally carried small baked-in debug markup (a frame
-//     number caption, stray guide lines/letters) near/below the feet, and —
-//     more importantly — each pose was NOT registered to a common foot
-//     position: idle/run/jump's feet sat noticeably higher in the 256
-//     canvas than punch/mind_blow's crouch. Anchoring the sprite to a
-//     single fixed point (as this config does) against ungroomed art like
-//     that is exactly what makes a character hover/sink when switching
-//     animations. Every source PNG has been cleaned (markup erased) and
-//     shifted so every frame's foot line sits at the same canvas position:
-//     native (128, 231). CHARACTER_ORIGIN below is that point expressed as
-//     a Phaser origin fraction. If new art is dropped in, re-register it
-//     the same way (or these numbers will need re-measuring).
+//  2. Every frame carried small baked-in debug markup (a frame-number
+//     caption, stray guide lines, a stray letter). That markup is all
+//     near-black (avg value <= 92) or a 1-3px tall guide line, whereas the
+//     real effect art — the ground shadows and the punch impact burst — is
+//     light grey (value >= 110) and the mind_blow aura is saturated
+//     purple. The cleanup keeps the largest component plus anything bright
+//     or colourful and erases the rest. DON'T loosen this into "erase
+//     everything that isn't the character": the punch impact burst and the
+//     airborne ground shadows are separate components, and blanket-erasing
+//     them silently guts the punch and jump animations.
+//  3. idle/run/jump were drawn ~20px higher on the canvas than
+//     punch/mind_blow, so the sets had to be aligned. That alignment is
+//     applied PER ANIMATION (one uniform shift for all of an animation's
+//     frames), never per frame: within an animation the vertical spread is
+//     intentional motion — the jump's tuck and airborne rise, mind_blow's
+//     levitation at the apex — and flattening each frame's bbox to a fixed
+//     line destroys exactly that. Every animation's ground line (where its
+//     shadow rests) now sits at native y=229; CHARACTER_ORIGIN is that
+//     point as a Phaser origin fraction.
 // ---------------------------------------------------------------------------
 
 export const CHARACTER_NATIVE_SIZE = 256; // every source frame is a 256x256 canvas
@@ -33,32 +40,37 @@ export const CHARACTER_NATIVE_SIZE = 256; // every source frame is a 256x256 can
 export const CHARACTER_SCALE = 0.85;
 
 // Sprite origin, as Phaser fractions (0-1) of the 256x256 canvas — the
-// point in every frame that maps to Player's (x, y). Every frame is
-// registered so its feet sit at native (128, 231); this is that point
-// expressed as a fraction, so `y` is Rati's actual ground-contact row
-// rather than the canvas edge.
-export const CHARACTER_ORIGIN = { x: 128 / 256, y: 231 / 256 };
+// point in every frame that maps to Player's (x, y). Each animation's
+// ground line (where its shadow rests) sits at native y=229, and the
+// resting silhouette is centred on native x=132, so `y` here is Rati's
+// actual ground-contact row rather than the canvas edge.
+export const CHARACTER_ORIGIN = { x: 132 / 256, y: 229 / 256 };
 
 // Collision box, in NATIVE (pre-scale) pixels — Player.js scales it via
-// Phaser's body.setSize/setOffset. Sized to idle/run/jump's resting
-// silhouette (not punch/mind_blow's extended reach, which use their own
-// separate hitbox/AoE circle instead of the body) and anchored to the same
-// native (128, 231) foot point every frame now shares.
-export const CHARACTER_BODY = { width: 76, height: 121, offsetX: 90, offsetY: 110 };
+// Phaser's body.setSize/setOffset. Sized to idle's resting silhouette, not
+// punch/mind_blow's extended reach (those use their own hitbox/AoE circle
+// instead of the body). offsetY + height lands exactly on the native 229
+// ground line, so the body's bottom edge always equals the sprite's y and
+// Rati's feet can't drift off the floor.
+export const CHARACTER_BODY = { width: 76, height: 118, offsetX: 94, offsetY: 111 };
 
 export const CHARACTER_ANIMATIONS = {
-  idle: { frameCount: 7, frameRate: 7, repeat: -1 },
-  run: { frameCount: 9, frameRate: 14, repeat: -1 },
-  jump: { frameCount: 7, frameRate: 12, repeat: 0 },
-  punch: { frameCount: 7, frameRate: 14, repeat: 0 },
-  mind_blow: { frameCount: 13, frameRate: 12, repeat: 0 }
+  idle: { frameCount: 7, frameRate: 8, repeat: -1 },
+  run: { frameCount: 9, frameRate: 18, repeat: -1 },
+  jump: { frameCount: 7, frameRate: 15, repeat: 0 },
+  punch: { frameCount: 7, frameRate: 18, repeat: 0 },
+  mind_blow: { frameCount: 13, frameRate: 15, repeat: 0 }
 };
 
 export const PLAYER_STATS = {
   maxHp: 100,
   lives: 3,
-  moveSpeed: 170,
-  jumpVelocity: 360,
+  moveSpeed: 215,
+  jumpVelocity: 430,
+  // Snappier than a floaty default: paired with the higher world gravity
+  // in main.js so jumps rise fast and come down fast instead of hanging.
+  maxFallSpeed: 900,
+  dragX: 1600,
   punchDamage: 15,
   punchRange: 56,
   // Extra recovery time added AFTER the punch animation itself finishes,
@@ -68,17 +80,19 @@ export const PLAYER_STATS = {
   // second hardcoded number — a fixed duration here that doesn't match the
   // animation's real length is exactly what caused the swing to visibly
   // get cut short and re-trigger mid-animation.
-  punchRecoveryMs: 80,
+  punchRecoveryMs: 40,
   invulnerableAfterHitMs: 900,
-  // Mind Blow (key CONTROLS.special): Rati levitates in place, briefly
-  // invulnerable, then blasts every enemy/boss within `radius` of him for
-  // `damage`. Its duration is likewise read from the real 'mind_blow'
+  // Mind Blow (key CONTROLS.special): Rati charges up and levitates,
+  // briefly invulnerable, then blasts every enemy/boss within `radius` of
+  // him for `damage`. Its duration is read from the real 'mind_blow'
   // animation at runtime (Player.useMindBlow()), not hardcoded here, so it
   // can never drift out of sync with CHARACTER_ANIMATIONS.mind_blow above.
+  // There's deliberately no lift/hover value here: the animation's own art
+  // already lifts Rati off the ground at its apex, so adding a positional
+  // tween on top of it made him rise twice as far as the art intends.
   mindBlow: {
     damage: 40,
     radius: 170,
-    cooldownMs: 8000,
-    liftHeight: 55
+    cooldownMs: 5000
   }
 };

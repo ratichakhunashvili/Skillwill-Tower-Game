@@ -26,7 +26,9 @@ const config = {
   physics: {
     default: 'arcade',
     arcade: {
-      gravity: { y: 900 },
+      // High-ish gravity paired with PLAYER_STATS.jumpVelocity keeps jumps
+      // snappy — rise fast, fall fast — rather than floaty.
+      gravity: { y: 1350 },
       debug: false
     }
   },

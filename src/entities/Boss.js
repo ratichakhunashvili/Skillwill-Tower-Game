@@ -3,8 +3,8 @@ import { generateBossTexture } from '../utils/placeholderArt.js';
 const KOSTA_COLOR = 0x2c003e;
 
 const PHASES = {
-  1: { speed: 60, dashCooldown: 2600, dashSpeed: 260, damage: 18 },
-  2: { speed: 90, dashCooldown: 1800, dashSpeed: 340, damage: 22 } // hp <= 50%
+  1: { speed: 95, dashCooldown: 2000, dashSpeed: 340, damage: 18 },
+  2: { speed: 135, dashCooldown: 1400, dashSpeed: 440, damage: 22 } // hp <= 50%
 };
 
 export default class Boss {

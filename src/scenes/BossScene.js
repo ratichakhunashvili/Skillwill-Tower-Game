@@ -33,7 +33,7 @@ export default class BossScene extends Phaser.Scene {
     this.physics.add.collider(this.addGroup, this.solids);
     this.physics.add.overlap(this.player.sprite, this.addGroup, this.onAddContact, undefined, this);
 
-    this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.14, 0.14);
 
     // boss health bar (screen space)
     this.add.text(this.scale.width / 2, 14, 'KOSTA', { fontFamily: 'monospace', fontSize: '21px', color: '#ffffff' })

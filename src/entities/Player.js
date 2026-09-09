@@ -53,8 +53,8 @@ export default class Player {
     this.sprite.setCollideWorldBounds(true);
     this.sprite.setSize(CHARACTER_BODY.width, CHARACTER_BODY.height);
     this.sprite.setOffset(CHARACTER_BODY.offsetX, CHARACTER_BODY.offsetY);
-    this.sprite.setMaxVelocity(PLAYER_STATS.moveSpeed, 600);
-    this.sprite.setDragX(900);
+    this.sprite.setMaxVelocity(PLAYER_STATS.moveSpeed, PLAYER_STATS.maxFallSpeed);
+    this.sprite.setDragX(PLAYER_STATS.dragX);
 
     this.facing = 1;
     this.isPunching = false;
@@ -159,24 +159,17 @@ export default class Player {
     this.hasDealtMindBlowDamage = false;
     this.invulnerableUntil = time + abilityDuration + 200;
 
+    // Freeze him in place for the ability (planted, no drift, no fall) and
+    // let the animation do the rest — the mind_blow art lifts Rati off the
+    // ground itself at its apex, so tweening his position up as well made
+    // him rise about twice as far as the art intends.
     this.sprite.setVelocity(0, 0);
     this.body.setAllowGravity(false);
     this.body.moves = false;
     this.sprite.anims.play('mind_blow', true);
 
-    const startY = this.sprite.y;
-    this.scene.tweens.add({
-      targets: this.sprite,
-      y: startY - cfg.liftHeight,
-      duration: abilityDuration * 0.35,
-      yoyo: true,
-      hold: abilityDuration * 0.3,
-      ease: 'Sine.easeInOut'
-    });
-
     this.scene.time.delayedCall(abilityDuration, () => {
       this.isMindBlowing = false;
-      this.sprite.y = startY;
       this.body.moves = true;
       this.body.setAllowGravity(true);
     });

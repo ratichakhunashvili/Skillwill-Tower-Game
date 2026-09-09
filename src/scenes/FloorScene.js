@@ -43,7 +43,7 @@ export default class FloorScene extends Phaser.Scene {
     this.physics.add.overlap(this.player.sprite, this.enemyGroup, this.onEnemyContact, undefined, this);
     this.physics.add.overlap(this.player.sprite, exitZone, this.onReachExit, undefined, this);
 
-    this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.14, 0.14);
 
     if (floor.intro) {
       const t = this.add.text(this.scale.width / 2, 26, floor.intro, {
