@@ -25,6 +25,12 @@ export default class HUDScene extends Phaser.Scene {
     }).setScrollFactor(0).setDepth(1001);
     this.mindBlowBarBg = this.add.rectangle(18, 96, 160, 12, 0x000000).setOrigin(0, 0).setScrollFactor(0).setDepth(1000);
     this.mindBlowBarFill = this.add.rectangle(20, 98, 156, 8, 0x8e44ad).setOrigin(0, 0).setScrollFactor(0).setDepth(1001);
+
+    // Fullscreen is opt-in only, toggleable anytime during play too.
+    this.input.keyboard.on('keydown-F', () => {
+      if (!this.scale.fullscreen.available) return;
+      try { this.scale.toggleFullscreen(); } catch (e) { /* fullscreen not available here */ }
+    });
   }
 
   update() {

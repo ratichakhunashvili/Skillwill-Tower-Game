@@ -34,19 +34,24 @@ export default class TitleScene extends Phaser.Scene {
       color: '#777777'
     }).setOrigin(0.5);
 
+    this.add.text(width / 2, height * 0.85, 'F: Toggle Fullscreen', {
+      fontFamily: 'monospace',
+      fontSize: '15px',
+      color: '#555555'
+    }).setOrigin(0.5);
+
     this.input.keyboard.once('keydown-SPACE', () => this.startGame());
     this.input.once('pointerdown', () => this.startGame());
+
+    // Fullscreen is opt-in only — the game starts windowed by default, and
+    // the player decides for themselves whether to go fullscreen.
+    this.input.keyboard.on('keydown-F', () => {
+      if (!this.scale.fullscreen.available) return;
+      try { this.scale.toggleFullscreen(); } catch (e) { /* fullscreen not available here */ }
+    });
   }
 
   startGame() {
-    // Pressing SPACE/clicking here is a real user gesture, so this is the
-    // one place the Fullscreen API is actually allowed to succeed without
-    // a separate "click to go fullscreen" step. Some contexts (an iframe
-    // without allowfullscreen, an unsupported browser) reject it — that's
-    // fine, the game just stays windowed at its normal scaled size.
-    if (this.scale.fullscreen.available && !this.scale.isFullscreen) {
-      try { this.scale.startFullscreen(); } catch (e) { /* fullscreen not available here */ }
-    }
     resetGame();
     this.scene.start('Floor', { floorId: 1 });
     this.scene.launch('HUD');
