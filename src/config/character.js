@@ -47,30 +47,37 @@ export const CHARACTER_ORIGIN = { x: 128 / 256, y: 231 / 256 };
 export const CHARACTER_BODY = { width: 76, height: 121, offsetX: 90, offsetY: 110 };
 
 export const CHARACTER_ANIMATIONS = {
-  idle: { frameCount: 7, frameRate: 6, repeat: -1 },
-  run: { frameCount: 9, frameRate: 12, repeat: -1 },
-  jump: { frameCount: 7, frameRate: 10, repeat: 0 },
-  punch: { frameCount: 7, frameRate: 12, repeat: 0 },
-  mind_blow: { frameCount: 13, frameRate: 10, repeat: 0 }
+  idle: { frameCount: 7, frameRate: 7, repeat: -1 },
+  run: { frameCount: 9, frameRate: 14, repeat: -1 },
+  jump: { frameCount: 7, frameRate: 12, repeat: 0 },
+  punch: { frameCount: 7, frameRate: 14, repeat: 0 },
+  mind_blow: { frameCount: 13, frameRate: 12, repeat: 0 }
 };
 
 export const PLAYER_STATS = {
   maxHp: 100,
   lives: 3,
-  moveSpeed: 140,
+  moveSpeed: 170,
   jumpVelocity: 360,
   punchDamage: 15,
   punchRange: 56,
-  punchCooldownMs: 350,
+  // Extra recovery time added AFTER the punch animation itself finishes,
+  // before another punch can start. The punch's own busy-lock and the
+  // "can I punch again" gate are both derived from the actual 'punch'
+  // animation's real duration at runtime (Player.punch()) rather than a
+  // second hardcoded number — a fixed duration here that doesn't match the
+  // animation's real length is exactly what caused the swing to visibly
+  // get cut short and re-trigger mid-animation.
+  punchRecoveryMs: 80,
   invulnerableAfterHitMs: 900,
   // Mind Blow (key CONTROLS.special): Rati levitates in place, briefly
   // invulnerable, then blasts every enemy/boss within `radius` of him for
-  // `damage`. durationMs roughly matches the 13-frame mind_blow animation
-  // at its suggested_fps (13 frames / 10fps ≈ 1.3s).
+  // `damage`. Its duration is likewise read from the real 'mind_blow'
+  // animation at runtime (Player.useMindBlow()), not hardcoded here, so it
+  // can never drift out of sync with CHARACTER_ANIMATIONS.mind_blow above.
   mindBlow: {
     damage: 40,
     radius: 170,
-    durationMs: 1300,
     cooldownMs: 8000,
     liftHeight: 55
   }

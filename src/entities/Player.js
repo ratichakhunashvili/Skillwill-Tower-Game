@@ -126,12 +126,16 @@ export default class Player {
 
   punch(time) {
     if (this.isMindBlowing || time < this.nextPunchAllowed) return;
-    this.nextPunchAllowed = time + PLAYER_STATS.punchCooldownMs;
+    // Drive both "how long is the swing locked in" and "how soon can I
+    // punch again" off the animation's own real duration, so they can
+    // never drift out of sync with CHARACTER_ANIMATIONS.punch again.
+    const punchDuration = this.scene.anims.get('punch').duration;
+    this.nextPunchAllowed = time + punchDuration + PLAYER_STATS.punchRecoveryMs;
     this.isPunching = true;
     this.hasDealtDamage = false;
     this.sprite.setVelocityX(0);
     this.sprite.anims.play('punch', true);
-    this.scene.time.delayedCall(220, () => { this.isPunching = false; });
+    this.scene.time.delayedCall(punchDuration, () => { this.isPunching = false; });
   }
 
   /**
@@ -145,11 +149,15 @@ export default class Player {
   useMindBlow(time) {
     if (this.isPunching || this.isMindBlowing || time < this.nextMindBlowAllowed) return;
     const cfg = PLAYER_STATS.mindBlow;
+    // Same principle as punch(): the ability's actual on-screen duration
+    // comes from the real 'mind_blow' animation, not a separate hardcoded
+    // number, so it can't drift out of sync with CHARACTER_ANIMATIONS.
+    const abilityDuration = this.scene.anims.get('mind_blow').duration;
     this.nextMindBlowAllowed = time + cfg.cooldownMs;
     gameState.mindBlowReadyAt = this.nextMindBlowAllowed;
     this.isMindBlowing = true;
     this.hasDealtMindBlowDamage = false;
-    this.invulnerableUntil = time + cfg.durationMs + 200;
+    this.invulnerableUntil = time + abilityDuration + 200;
 
     this.sprite.setVelocity(0, 0);
     this.body.setAllowGravity(false);
@@ -160,13 +168,13 @@ export default class Player {
     this.scene.tweens.add({
       targets: this.sprite,
       y: startY - cfg.liftHeight,
-      duration: cfg.durationMs * 0.35,
+      duration: abilityDuration * 0.35,
       yoyo: true,
-      hold: cfg.durationMs * 0.3,
+      hold: abilityDuration * 0.3,
       ease: 'Sine.easeInOut'
     });
 
-    this.scene.time.delayedCall(cfg.durationMs, () => {
+    this.scene.time.delayedCall(abilityDuration, () => {
       this.isMindBlowing = false;
       this.sprite.y = startY;
       this.body.moves = true;
