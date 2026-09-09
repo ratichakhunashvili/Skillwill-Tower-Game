@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
-import { getFloor, nextFloorId, WORLD } from '../config/floors.js';
+import { getFloor, nextFloorId } from '../config/floors.js';
 import { PLAYER_STATS } from '../config/character.js';
 import { state, setCheckpoint } from '../utils/gameState.js';
+import { buildLevel } from '../utils/levelBuilder.js';
 import Player from '../entities/Player.js';
 import Enemy from '../entities/Enemy.js';
 
@@ -20,40 +21,21 @@ export default class FloorScene extends Phaser.Scene {
     this.transitioning = false;
     this.enemies = [];
 
-    const groundTop = WORLD.height - WORLD.groundHeight;
+    const { worldWidth, groundY, solids } = buildLevel(this, floor);
+    this.solids = solids;
+    this.groundY = groundY;
 
-    this.cameras.main.setBackgroundColor(floor.bg);
-    this.physics.world.setBounds(0, 0, WORLD.width, WORLD.height);
-    this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
-
-    // subtle vertical accent stripes for theme flavor
-    for (let x = 60; x < WORLD.width; x += 220) {
-      this.add.rectangle(x, 0, 6, WORLD.height, floor.accent, 0.12).setOrigin(0, 0);
-    }
-
-    this.solids = this.physics.add.staticGroup();
-    const ground = this.add.rectangle(0, groundTop, WORLD.width, WORLD.groundHeight, floor.ground).setOrigin(0, 0);
-    this.physics.add.existing(ground, true);
-    this.solids.add(ground);
-
-    if (floor.hasCombat) {
-      const plat1 = this.add.rectangle(480, groundTop - 70, 100, 12, floor.ground).setOrigin(0, 0);
-      const plat2 = this.add.rectangle(980, groundTop - 100, 100, 12, floor.ground).setOrigin(0, 0);
-      [plat1, plat2].forEach(p => { this.physics.add.existing(p, true); this.solids.add(p); });
-    }
-
-    // exit door marker
-    const door = this.add.rectangle(WORLD.width - 34, groundTop - 60, 24, 60, floor.accent).setOrigin(0, 0);
-    const exitZone = this.add.zone(WORLD.width - 22, groundTop - 30, 24, 60);
+    // exit zone at the far right, roughly where the elevator is drawn
+    const exitZone = this.add.zone(worldWidth - 60, groundY - 70, 100, 140);
     this.physics.add.existing(exitZone, true);
 
-    this.player = new Player(this, 40, groundTop - 40);
+    this.player = new Player(this, 70, groundY);
     this.physics.add.collider(this.player.sprite, this.solids);
 
     this.enemyGroup = this.physics.add.group();
-    const enemyPositions = this.buildEnemyPositions(floor, groundTop);
+    const enemyPositions = this.buildEnemyPositions(floor, worldWidth);
     enemyPositions.forEach(({ x, type }) => {
-      const enemy = new Enemy(this, x, groundTop, type, floor.accent);
+      const enemy = new Enemy(this, x, groundY, type, floor.accent);
       this.enemies.push(enemy);
       this.enemyGroup.add(enemy.sprite);
     });
@@ -64,18 +46,18 @@ export default class FloorScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
 
     if (floor.intro) {
-      const t = this.add.text(this.scale.width / 2, 34, floor.intro, {
-        fontFamily: 'monospace', fontSize: '8px', color: '#ffffff', align: 'center',
-        wordWrap: { width: this.scale.width - 20 }
+      const t = this.add.text(this.scale.width / 2, 20, floor.intro, {
+        fontFamily: 'monospace', fontSize: '14px', color: '#ffffff', align: 'center',
+        wordWrap: { width: this.scale.width - 40 }
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(999);
       this.tweens.add({ targets: t, alpha: 0, delay: 2400, duration: 600, onComplete: () => t.destroy() });
     }
   }
 
-  buildEnemyPositions(floor, groundTop) {
+  buildEnemyPositions(floor, worldWidth) {
     const positions = [];
     const usableStart = 220;
-    const usableEnd = WORLD.width - 220;
+    const usableEnd = worldWidth - 220;
     const total = floor.enemies.spider + floor.enemies.mob;
     if (total === 0) return positions;
     const step = (usableEnd - usableStart) / total;
@@ -131,6 +113,17 @@ export default class FloorScene extends Phaser.Scene {
           this.player.hasDealtDamage = true;
         }
       });
+    }
+
+    if (this.player.isMindBlowing && !this.player.hasDealtMindBlowDamage) {
+      const circle = this.player.getMindBlowCircle();
+      this.enemies.forEach(enemy => {
+        if (enemy.dead) return;
+        if (Phaser.Geom.Intersects.CircleToRectangle(circle, enemy.sprite.getBounds())) {
+          enemy.takeDamage(PLAYER_STATS.mindBlow.damage);
+        }
+      });
+      this.player.hasDealtMindBlowDamage = true;
     }
   }
 }

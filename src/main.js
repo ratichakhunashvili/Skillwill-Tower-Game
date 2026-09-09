@@ -14,14 +14,14 @@ const config = {
   parent: 'game-container',
   pixelArt: true,
   roundPixels: true,
-  width: 480,
-  height: WORLD.height,
+  width: WORLD.viewWidth,
+  height: WORLD.viewHeight,
   backgroundColor: '#000000',
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 480,
-    height: WORLD.height
+    width: WORLD.viewWidth,
+    height: WORLD.viewHeight
   },
   physics: {
     default: 'arcade',

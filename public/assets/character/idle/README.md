@@ -1,16 +1,13 @@
 # idle animation
 
-Put your idle spritesheet here, named exactly:
+Rati's real art lives here as one PNG per frame (not a spritesheet):
 
 ```
-idle.png
+idle_01.png, idle_02.png, ..., idle_07.png
 ```
 
-**Format:** one horizontal row of equal-size frames (frame 0, 1, 2, ... left to right), transparent background, facing **right**.
+**Format:** 256x256 transparent canvas per frame, character facing right. Frame count/fps are configured in `src/config/character.js` → `CHARACTER_ANIMATIONS.idle`.
 
-**Current config** (edit in `src/config/character.js` → `CHARACTER_ANIMATIONS.idle` to match your actual art):
-- frame size: 32 x 48 px
-- frame count: 2
-- frame rate: 3 fps
+Note: the original export's `idle_08.png` is a blank/empty frame (a small bug in the art pack) and is intentionally excluded — `frameCount: 7` in the config stops one frame early.
 
-As soon as a valid `idle.png` matching the configured frame size/count is here, the game uses it automatically instead of the placeholder sprite — no code changes needed beyond updating the numbers above if your frame size differs.
+To swap in new/updated art, replace files here keeping the same naming pattern and update `frameCount` in `character.js` if the count changes. See `public/assets/character/manifest.json` for the original per-animation frame/fps notes from the art pack.

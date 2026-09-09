@@ -1,6 +1,6 @@
 # Skillfull Will
 
-A pixel-art 2D side-scrolling platformer built with Phaser 3 + Vite. You play a Skillwill character climbing the 12-story Skillwill Tower, fighting spiders and themed mobs floor by floor, and facing the final boss **Kosta** on the 13th floor balcony.
+A pixel-art 2D side-scrolling platformer built with Phaser 3 + Vite. You play **Rati**, climbing the 12-story Skillwill Tower through real painted floor art, fighting spiders and themed mobs floor by floor, and facing the final boss **Kosta** on the 13th floor balcony.
 
 ## Run it
 
@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Then open the URL Vite prints (usually http://localhost:5173).
+Then open the URL Vite prints (usually http://localhost:5173). The game canvas is 960x540.
 
 ## Controls
 
@@ -18,6 +18,7 @@ Then open the URL Vite prints (usually http://localhost:5173).
 | ← / → | Move |
 | Space | Jump |
 | X | Punch |
+| C | Mind Blow (special ability, see below) |
 
 ## Floors
 
@@ -32,23 +33,26 @@ Then open the URL Vite prints (usually http://localhost:5173).
 | 12 | Office | No |
 | 13 | Balcony — boss fight vs Kosta | Yes |
 
-Everything about a floor (colors, enemy counts, intro text) lives in [src/config/floors.js](src/config/floors.js) — edit that file to change layout, difficulty, or add more floors.
+Everything about a floor (colors, enemy counts, intro text, `groundY`) lives in [src/config/floors.js](src/config/floors.js) — edit that file to change layout, difficulty, or add more floors.
 
-## Adding your character's real art
+## Art status
 
-The game currently uses **auto-generated placeholder sprites** so it's playable right away. To swap in real pixel art:
+- **Rati (player) and all 13 floor backgrounds are real, painted art** — see `public/assets/character/` and `public/assets/levels/`.
+- **Spiders, mobs, and Kosta are still auto-generated placeholder sprites.** Drop real art into `public/assets/enemies/spider/spider.png`, `public/assets/enemies/mob/mob.png`, or `public/assets/boss/kosta/kosta.png` and it's picked up automatically — no code changes needed. See each folder's README.
 
-1. Put spritesheet PNGs in `public/assets/character/<idle|run|jump|punch>/<name>.png`. Each README in those folders explains the exact filename and frame format expected.
-2. If your frame size/count differs from the defaults, update [src/config/character.js](src/config/character.js) (`CHARACTER_ANIMATIONS`) to match.
-3. Reload the page — real art is used automatically the moment a matching file is found. No other code changes needed.
+### Rati's animations
 
-The same drop-in pattern works for enemies (`public/assets/enemies/spider/spider.png`, `public/assets/enemies/mob/mob.png`) and the boss (`public/assets/boss/kosta/kosta.png`), though those are optional — placeholders are fine for them long-term too.
+Unlike the enemy/boss slots (single spritesheet PNG), Rati's art ships as **one PNG per frame** — see `public/assets/character/<idle|run|jump|punch|mind_blow>/`, each with a README, plus `public/assets/character/manifest.json` from the original art pack. Frame counts/fps/scale live in [src/config/character.js](src/config/character.js).
+
+### Level backgrounds
+
+Each floor's painted background is `public/assets/levels/<floorId>.png`, loaded at native resolution — [src/utils/levelBuilder.js](src/utils/levelBuilder.js) positions it using that floor's `groundY` (the row, in the image's own pixels, where the floor line sits) so every floor's walkable line lands at the same on-screen height regardless of how tall the source art is. A floor with no matching PNG falls back to a flat theme-colored ground instead of crashing.
 
 ## Special abilities (per character)
 
-Each Skillwill character you give me will get its own special ability. The hook is already wired:
-- Key **C** is reserved for it in [src/config/controls.js](src/config/controls.js) (`CONTROLS.special`).
-- `Player` doesn't implement a special move yet — tell me the character and what their ability should do, and I'll add it to [src/entities/Player.js](src/entities/Player.js).
+**Rati's special is Mind Blow** (key **C**): he levitates briefly, invulnerable, then deals AoE damage to every enemy/boss within range. Tuning (damage, radius, cooldown) lives in `PLAYER_STATS.mindBlow` in [src/config/character.js](src/config/character.js); the logic is in `Player.useMindBlow()` in [src/entities/Player.js](src/entities/Player.js).
+
+Future Skillwill characters would get their own ability the same way — tell me the character and what it should do.
 
 ## Project structure
 
@@ -56,12 +60,12 @@ Each Skillwill character you give me will get its own special ability. The hook 
 src/
   main.js              Phaser game config, scene list
   config/
-    floors.js          All 13 floors' data (theme, enemies, intro text)
-    character.js        Player animation frame config + stats (hp, speed, damage...)
+    floors.js          All 13 floors' data (theme, enemies, intro text, groundY)
+    character.js        Rati's animation config, display scale, collision box, stats
     controls.js         Key bindings
   scenes/
     BootScene.js         -> Preload
-    PreloadScene.js      Tries to load real art, falls back to placeholders
+    PreloadScene.js      Loads real art (per-frame character PNGs + level backgrounds), falls back to placeholders
     TitleScene.js        Title screen
     FloorScene.js        Generic scene used for floors 1–12
     BossScene.js         Floor 13 — Kosta fight
@@ -69,24 +73,26 @@ src/
     GameOverScene.js
     VictoryScene.js
   entities/
-    Player.js            Movement, punch, animations, damage/invulnerability
+    Player.js            Movement, punch, Mind Blow, animations, damage/invulnerability
     Enemy.js             Spiders + themed mobs (patrol AI, HP, contact damage)
     Boss.js               Kosta — phases, dash attacks, spawns spider adds
   utils/
     gameState.js          HP/lives/checkpoint singleton shared across scenes
-    placeholderArt.js      Generates placeholder pixel sprites at runtime
+    levelBuilder.js        Builds a floor's background/ground/camera/world bounds from its config + art
+    placeholderArt.js      Generates placeholder pixel sprites at runtime (enemies/boss, and Rati as a fallback)
 public/assets/            Drop real art here (see folder READMEs)
 ```
 
 ## Current gameplay rules
 
-- Each floor is a side-scrolling level — reach the elevator/exit door at the far right to advance (you don't have to kill every enemy).
+- Each floor is a side-scrolling level — reach the elevator at the far right to advance (you don't have to kill every enemy).
 - Floor entrance = checkpoint. Dying resets you to full HP at your current floor's checkpoint and costs one life.
 - Running out of lives ends the game (Game Over screen, restart from floor 1).
 - Defeating Kosta on floor 13 ends the game with a Victory screen.
 
 ## Not built yet (by design, waiting on your input)
 
-- Real character/enemy/boss art (placeholders are wired and swappable, see above)
-- Per-character special abilities
+- Real enemy/boss art (placeholders are wired and swappable, see above)
+- Sound effects and music (the game is currently silent)
+- Mobile/touch controls
 - Any additional per-floor puzzle/task beyond "reach the exit" (we can add these later per floor in `floors.js`)

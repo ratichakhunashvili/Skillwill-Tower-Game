@@ -1,16 +1,13 @@
 # run animation
 
-Put your run spritesheet here, named exactly:
+Rati's real art lives here as one PNG per frame (not a spritesheet):
 
 ```
-run.png
+run_01.png, run_02.png, ..., run_09.png
 ```
 
-**Format:** one horizontal row of equal-size frames (frame 0, 1, 2, ... left to right), transparent background, facing **right**.
+**Format:** 256x256 transparent canvas per frame, character facing right. Frame count/fps are configured in `src/config/character.js` → `CHARACTER_ANIMATIONS.run`.
 
-**Current config** (edit in `src/config/character.js` → `CHARACTER_ANIMATIONS.run` to match your actual art):
-- frame size: 32 x 48 px
-- frame count: 4
-- frame rate: 10 fps
+Note: the original export's `run_10.png` is a blank/empty frame (a small bug in the art pack) and is intentionally excluded — `frameCount: 9` in the config stops one frame early.
 
-As soon as a valid `run.png` matching the configured frame size/count is here, the game uses it automatically instead of the placeholder sprite — no code changes needed beyond updating the numbers above if your frame size differs.
+To swap in new/updated art, replace files here keeping the same naming pattern and update `frameCount` in `character.js` if the count changes. See `public/assets/character/manifest.json` for the original per-animation frame/fps notes from the art pack.
