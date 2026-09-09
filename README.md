@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Then open the URL Vite prints (usually http://localhost:5173). The game canvas is 960x540.
+Then open the URL Vite prints (usually http://localhost:5173). The game canvas is 1280x720, and pressing SPACE on the title screen also requests real browser fullscreen (that keypress is the one moment a user gesture makes the Fullscreen API work — some embedded/iframe contexts may reject it, in which case the game just stays windowed at its normal scaled size).
 
 ## Controls
 
@@ -44,13 +44,15 @@ Everything about a floor (colors, enemy counts, intro text, `groundY`) lives in 
 
 Unlike the enemy/boss slots (single spritesheet PNG), Rati's art ships as **one PNG per frame** — see `public/assets/character/<idle|run|jump|punch|mind_blow>/`, each with a README, plus `public/assets/character/manifest.json` from the original art pack. Frame counts/fps/scale live in [src/config/character.js](src/config/character.js).
 
+Every frame PNG has been cleaned and re-registered in place: the original export had small baked-in debug markup (a frame-number caption, stray guide lines) near the feet, and — more importantly — each pose's feet weren't at a consistent canvas position (idle/run/jump sat noticeably higher than punch/mind_blow's crouch), which is what made Rati hover/sink when switching animations. Every frame now has its feet at the same native canvas point (128, 231), which `CHARACTER_ORIGIN`/`CHARACTER_BODY` in `character.js` are built around. If you swap in new art, it needs the same treatment (clean + re-register to that same foot point) or the hover bug comes back.
+
 ### Level backgrounds
 
 Each floor's painted background is `public/assets/levels/<floorId>.png`, loaded at native resolution — [src/utils/levelBuilder.js](src/utils/levelBuilder.js) positions it using that floor's `groundY` (the row, in the image's own pixels, where the floor line sits) so every floor's walkable line lands at the same on-screen height regardless of how tall the source art is. A floor with no matching PNG falls back to a flat theme-colored ground instead of crashing.
 
 ## Special abilities (per character)
 
-**Rati's special is Mind Blow** (key **C**): he levitates briefly, invulnerable, then deals AoE damage to every enemy/boss within range. Tuning (damage, radius, cooldown) lives in `PLAYER_STATS.mindBlow` in [src/config/character.js](src/config/character.js); the logic is in `Player.useMindBlow()` in [src/entities/Player.js](src/entities/Player.js).
+**Rati's special is Mind Blow** (key **C**): he levitates briefly, invulnerable, then deals AoE damage to every enemy/boss within range. A cooldown bar in the HUD (bottom-left, under the HP bar) shows when it's recharging vs ready. Tuning (damage, radius, cooldown) lives in `PLAYER_STATS.mindBlow` in [src/config/character.js](src/config/character.js); the logic is in `Player.useMindBlow()` in [src/entities/Player.js](src/entities/Player.js).
 
 Future Skillwill characters would get their own ability the same way — tell me the character and what it should do.
 

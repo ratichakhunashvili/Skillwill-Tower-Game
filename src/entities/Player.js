@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CHARACTER_ANIMATIONS, CHARACTER_SCALE, CHARACTER_BODY, PLAYER_STATS } from '../config/character.js';
+import { CHARACTER_ANIMATIONS, CHARACTER_SCALE, CHARACTER_ORIGIN, CHARACTER_BODY, PLAYER_STATS } from '../config/character.js';
 import { CONTROLS } from '../config/controls.js';
 import { buildPlaceholderAnimFrames } from '../utils/placeholderArt.js';
 import { state as gameState, damagePlayer } from '../utils/gameState.js';
@@ -43,10 +43,10 @@ export default class Player {
     const initialFrame = idleAnim.frames[0];
 
     this.sprite = scene.physics.add.sprite(x, y, initialFrame.textureKey, initialFrame.textureFrame);
-    // Origin (0.5, 1) = bottom-center: `y` is Rati's feet/ground-contact
-    // point, matching every source frame's shared 256px-tall canvas bottom
-    // edge (see CHARACTER_BODY comment in config/character.js).
-    this.sprite.setOrigin(0.5, 1);
+    // Every frame is registered so its actual foot pixels sit at the same
+    // canvas position (see config/character.js) — CHARACTER_ORIGIN is that
+    // point, so `y` here is Rati's real ground-contact row in every anim.
+    this.sprite.setOrigin(CHARACTER_ORIGIN.x, CHARACTER_ORIGIN.y);
     this.sprite.setScale(CHARACTER_SCALE);
     this.sprite.setDataEnabled();
     this.sprite.data.set('owner', this);
@@ -146,6 +146,7 @@ export default class Player {
     if (this.isPunching || this.isMindBlowing || time < this.nextMindBlowAllowed) return;
     const cfg = PLAYER_STATS.mindBlow;
     this.nextMindBlowAllowed = time + cfg.cooldownMs;
+    gameState.mindBlowReadyAt = this.nextMindBlowAllowed;
     this.isMindBlowing = true;
     this.hasDealtMindBlowDamage = false;
     this.invulnerableUntil = time + cfg.durationMs + 200;
@@ -176,7 +177,7 @@ export default class Player {
   /** Rectangle in front of the player, only meaningful while isPunching. */
   getPunchHitbox() {
     const w = PLAYER_STATS.punchRange;
-    const h = 36;
+    const h = 51;
     const centerY = this.body.center.y;
     const x = this.facing === 1 ? this.body.right : this.body.left - w;
     return new Phaser.Geom.Rectangle(x, centerY - h / 2, w, h);

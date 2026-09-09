@@ -36,16 +36,16 @@ export default class BossScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
 
     // boss health bar (screen space)
-    this.add.text(this.scale.width / 2, 10, 'KOSTA', { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff' })
+    this.add.text(this.scale.width / 2, 14, 'KOSTA', { fontFamily: 'monospace', fontSize: '21px', color: '#ffffff' })
       .setOrigin(0.5, 0).setScrollFactor(0).setDepth(1000);
-    this.bossBarBg = this.add.rectangle(this.scale.width / 2, 30, 380, 14, 0x000000).setOrigin(0.5, 0).setScrollFactor(0).setDepth(1000);
-    this.bossBarFill = this.add.rectangle(this.scale.width / 2 - 188, 32, 376, 10, 0x8e44ad).setOrigin(0, 0).setScrollFactor(0).setDepth(1001);
+    this.bossBarBg = this.add.rectangle(this.scale.width / 2, 40, 507, 19, 0x000000).setOrigin(0.5, 0).setScrollFactor(0).setDepth(1000);
+    this.bossBarFill = this.add.rectangle(this.scale.width / 2 - 251, 43, 501, 13, 0x8e44ad).setOrigin(0, 0).setScrollFactor(0).setDepth(1001);
 
     const intro = floor.intro;
     if (intro) {
-      const t = this.add.text(this.scale.width / 2, 54, intro, {
-        fontFamily: 'monospace', fontSize: '14px', color: '#ffffff', align: 'center',
-        wordWrap: { width: this.scale.width - 40 }
+      const t = this.add.text(this.scale.width / 2, 72, intro, {
+        fontFamily: 'monospace', fontSize: '19px', color: '#ffffff', align: 'center',
+        wordWrap: { width: this.scale.width - 60 }
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(999);
       this.tweens.add({ targets: t, alpha: 0, delay: 2400, duration: 600, onComplete: () => t.destroy() });
     }
@@ -87,7 +87,7 @@ export default class BossScene extends Phaser.Scene {
     if (!this.boss.dead) this.boss.update(time, this.player.x);
     this.adds.forEach(e => { if (!e.dead) e.update(); });
 
-    this.bossBarFill.width = 376 * Phaser.Math.Clamp(this.boss.hp / this.boss.maxHp, 0, 1);
+    this.bossBarFill.width = 501 * Phaser.Math.Clamp(this.boss.hp / this.boss.maxHp, 0, 1);
 
     if (this.player.isPunching && !this.player.hasDealtDamage) {
       const hitbox = this.player.getPunchHitbox();

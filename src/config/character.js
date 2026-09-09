@@ -8,30 +8,43 @@
 // them). PreloadScene loads every frame as its own texture keyed
 // `char_<anim>_<n>`, and Player.js stitches them into a Phaser animation.
 //
-// NOTE: the source pack's very last frame in idle/run/jump/punch (e.g.
-// idle_08.png) is a fully blank/empty canvas — a small bug in the export.
-// frameCount below intentionally excludes that trailing blank frame so the
-// animations don't flash empty every loop.
+// NOTE on the source pack, and why every frame got reprocessed in place:
+//  1. The very last frame in idle/run/jump/punch (e.g. idle_08.png) is a
+//     fully blank/empty canvas — frameCount below excludes it.
+//  2. Every frame originally carried small baked-in debug markup (a frame
+//     number caption, stray guide lines/letters) near/below the feet, and —
+//     more importantly — each pose was NOT registered to a common foot
+//     position: idle/run/jump's feet sat noticeably higher in the 256
+//     canvas than punch/mind_blow's crouch. Anchoring the sprite to a
+//     single fixed point (as this config does) against ungroomed art like
+//     that is exactly what makes a character hover/sink when switching
+//     animations. Every source PNG has been cleaned (markup erased) and
+//     shifted so every frame's foot line sits at the same canvas position:
+//     native (128, 231). CHARACTER_ORIGIN below is that point expressed as
+//     a Phaser origin fraction. If new art is dropped in, re-register it
+//     the same way (or these numbers will need re-measuring).
 // ---------------------------------------------------------------------------
 
 export const CHARACTER_NATIVE_SIZE = 256; // every source frame is a 256x256 canvas
 
 // Shrinks the whole 256x256 canvas so Rati reads at a sensible size on
-// screen. Rati's silhouette is ~135-140px tall inside that canvas, so at
-// 0.6 he ends up roughly 80-85px tall in-game. Change this one number to
-// resize Rati everywhere (animations + collision box scale with it).
-export const CHARACTER_SCALE = 0.6;
+// screen. Change this one number to resize Rati everywhere (animations +
+// collision box scale with it).
+export const CHARACTER_SCALE = 0.85;
+
+// Sprite origin, as Phaser fractions (0-1) of the 256x256 canvas — the
+// point in every frame that maps to Player's (x, y). Every frame is
+// registered so its feet sit at native (128, 231); this is that point
+// expressed as a fraction, so `y` is Rati's actual ground-contact row
+// rather than the canvas edge.
+export const CHARACTER_ORIGIN = { x: 128 / 256, y: 231 / 256 };
 
 // Collision box, in NATIVE (pre-scale) pixels — Player.js scales it via
-// Phaser's body.setSize/setOffset. height is deliberately sized to reach
-// the bottom of the 256 canvas (256 - offsetY) rather than hugging Rati's
-// literal foot pixels: every frame's canvas has a few px of transparent
-// padding below the feet, and that padding differs slightly frame to frame
-// (idle/run/jump end ~226-227, punch/mind_blow ~230-231). Anchoring the box
-// (and the sprite's origin, set in Player.js) to the canvas edge instead of
-// the exact foot pixel keeps Rati's feet glued to the ground with zero
-// jitter when the animation switches.
-export const CHARACTER_BODY = { width: 80, height: 165, offsetX: 88, offsetY: 91 };
+// Phaser's body.setSize/setOffset. Sized to idle/run/jump's resting
+// silhouette (not punch/mind_blow's extended reach, which use their own
+// separate hitbox/AoE circle instead of the body) and anchored to the same
+// native (128, 231) foot point every frame now shares.
+export const CHARACTER_BODY = { width: 76, height: 121, offsetX: 90, offsetY: 110 };
 
 export const CHARACTER_ANIMATIONS = {
   idle: { frameCount: 7, frameRate: 6, repeat: -1 },
@@ -47,7 +60,7 @@ export const PLAYER_STATS = {
   moveSpeed: 140,
   jumpVelocity: 360,
   punchDamage: 15,
-  punchRange: 40,
+  punchRange: 56,
   punchCooldownMs: 350,
   invulnerableAfterHitMs: 900,
   // Mind Blow (key CONTROLS.special): Rati levitates in place, briefly
@@ -56,9 +69,9 @@ export const PLAYER_STATS = {
   // at its suggested_fps (13 frames / 10fps ≈ 1.3s).
   mindBlow: {
     damage: 40,
-    radius: 140,
+    radius: 170,
     durationMs: 1300,
     cooldownMs: 8000,
-    liftHeight: 46
+    liftHeight: 55
   }
 };

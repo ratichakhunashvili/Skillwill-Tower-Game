@@ -46,9 +46,9 @@ export default class FloorScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player.sprite, true, 0.08, 0.08);
 
     if (floor.intro) {
-      const t = this.add.text(this.scale.width / 2, 20, floor.intro, {
-        fontFamily: 'monospace', fontSize: '14px', color: '#ffffff', align: 'center',
-        wordWrap: { width: this.scale.width - 40 }
+      const t = this.add.text(this.scale.width / 2, 26, floor.intro, {
+        fontFamily: 'monospace', fontSize: '19px', color: '#ffffff', align: 'center',
+        wordWrap: { width: this.scale.width - 60 }
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(999);
       this.tweens.add({ targets: t, alpha: 0, delay: 2400, duration: 600, onComplete: () => t.destroy() });
     }

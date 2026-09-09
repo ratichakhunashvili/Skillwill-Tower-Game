@@ -9,7 +9,11 @@ export const state = {
   lives: PLAYER_STATS.lives,
   maxLives: PLAYER_STATS.lives,
   currentFloorId: FLOORS[0].id,
-  checkpointFloorId: FLOORS[0].id
+  checkpointFloorId: FLOORS[0].id,
+  // Timestamp (scene time, ms) Mind Blow next becomes available. HUDScene
+  // reads this to render the ability's cooldown indicator; Player.js is
+  // the only thing that writes it, from useMindBlow().
+  mindBlowReadyAt: 0
 };
 
 export function resetGame() {
@@ -17,6 +21,7 @@ export function resetGame() {
   state.lives = PLAYER_STATS.lives;
   state.currentFloorId = FLOORS[0].id;
   state.checkpointFloorId = FLOORS[0].id;
+  state.mindBlowReadyAt = 0;
 }
 
 export function setCheckpoint(floorId) {

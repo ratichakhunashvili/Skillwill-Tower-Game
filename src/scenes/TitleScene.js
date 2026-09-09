@@ -12,25 +12,25 @@ export default class TitleScene extends Phaser.Scene {
 
     this.add.text(width / 2, height * 0.32, 'SKILLFULL WILL', {
       fontFamily: 'monospace',
-      fontSize: '40px',
+      fontSize: '53px',
       color: '#ffffff'
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, height * 0.32 + 38, 'Skillwill Tower', {
+    this.add.text(width / 2, height * 0.32 + 50, 'Skillwill Tower', {
       fontFamily: 'monospace',
-      fontSize: '18px',
+      fontSize: '24px',
       color: '#999999'
     }).setOrigin(0.5);
 
     this.add.text(width / 2, height * 0.62, 'Press SPACE to start', {
       fontFamily: 'monospace',
-      fontSize: '22px',
+      fontSize: '29px',
       color: '#f1c40f'
     }).setOrigin(0.5);
 
     this.add.text(width / 2, height * 0.78, 'Arrows: Move   Space: Jump   X: Punch   C: Mind Blow', {
       fontFamily: 'monospace',
-      fontSize: '14px',
+      fontSize: '19px',
       color: '#777777'
     }).setOrigin(0.5);
 
@@ -39,6 +39,14 @@ export default class TitleScene extends Phaser.Scene {
   }
 
   startGame() {
+    // Pressing SPACE/clicking here is a real user gesture, so this is the
+    // one place the Fullscreen API is actually allowed to succeed without
+    // a separate "click to go fullscreen" step. Some contexts (an iframe
+    // without allowfullscreen, an unsupported browser) reject it — that's
+    // fine, the game just stays windowed at its normal scaled size.
+    if (this.scale.fullscreen.available && !this.scale.isFullscreen) {
+      try { this.scale.startFullscreen(); } catch (e) { /* fullscreen not available here */ }
+    }
     resetGame();
     this.scene.start('Floor', { floorId: 1 });
     this.scene.launch('HUD');

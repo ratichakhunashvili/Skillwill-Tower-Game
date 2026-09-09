@@ -3,7 +3,7 @@ import { WORLD } from '../config/floors.js';
 // How far down the viewport the ground line sits. Leaves headroom above to
 // show off the painted backgrounds, and a little margin below the ground
 // so a bit of floor/reflection is visible under Rati's feet.
-const GROUND_SCREEN_Y = 440;
+const GROUND_SCREEN_Y = 587;
 
 // Thickness of the invisible ground collider (world px). Only its top edge
 // matters for platforming, so this just needs to be tall enough that fast
